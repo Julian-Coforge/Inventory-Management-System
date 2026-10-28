@@ -58,3 +58,18 @@ def get_product(conn, sku: str):
         (sku,)
     ).fetchone()
     return product
+
+def change_price(conn, sku: str, new_price: int):
+    price_tuple = (new_price, sku)
+    conn.execute(
+        """UPDATE Products SET UnitPrice = ? WHERE SKU = ?""",
+        price_tuple
+    )
+    conn.commit()
+
+def delete_product(conn, sku: str):
+    conn.execute(
+        """DELETE FROM Products WHERE SKU = ?""",
+        (sku,)
+    )
+    conn.commit()
