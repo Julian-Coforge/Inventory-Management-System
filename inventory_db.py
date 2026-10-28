@@ -73,3 +73,18 @@ def delete_product(conn, sku: str):
         (sku,)
     )
     conn.commit()
+
+def search_products(conn, category=None, max_price=None, low_stock=False):
+    sql = "SELECT * FROM Products"
+    conditions = []
+    params = []
+    if category is not None:
+        conditions.append("Category = ?")
+        params.append(category)
+    if max_price is not None:
+        conditions.append("UnitPrice <= ?")
+        params.append(max_price)
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    return conn.execute(sql, params).fetchall()
+

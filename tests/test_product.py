@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from inventory_db import connect, create_schema, seed, add_product, get_product, change_price, delete_product
+from inventory_db import add_product, get_product, change_price, delete_product, search_products
 
 
 def test_add_product(inventory_database):
@@ -28,3 +28,12 @@ def test_change_product_price(inventory_database):
 def test_delete_product(inventory_database):
     delete_product(inventory_database, "TOOL-Hammer")
     assert get_product(inventory_database, "TOOL-Hammer") is None
+
+def test_search_product_category(inventory_database):
+    results = search_products(inventory_database, category="Tool")
+    names = {row["Name"] for row in results}
+    assert names == {"Phillips Head Screwdriver", "Hammer"}
+
+def test_search_products_no_filters(inventory_database):
+    results = search_products(inventory_database)
+    assert len(results) == 4
