@@ -1,3 +1,4 @@
+from pathlib import Path
 import sqlite3
 
 
@@ -8,4 +9,5 @@ def connect(path: str):
     return conn
 
 def create_schema(conn):
-    
+    sql = (Path(__file__).parent / "schema.sql").read_text()
+    conn.executescript(sql)
