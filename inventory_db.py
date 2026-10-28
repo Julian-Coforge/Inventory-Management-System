@@ -2,6 +2,24 @@ import sqlite3
 from pathlib import Path
 
 
+class ProductError(Exception):
+    """Base for all product rule errors."""
+
+class DuplicateSKUError(ProductError):
+    pass
+
+class UnknownSupplierError(ProductError):
+    pass
+
+class NegativePriceError(ProductError):
+    pass
+
+class NegativeQuantityError(ProductError):
+    pass
+
+class ProductHasSalesError(ProductError):
+    pass
+
 def connect(path: str):
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA foreign_keys = ON")
