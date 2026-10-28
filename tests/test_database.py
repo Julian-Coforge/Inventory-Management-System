@@ -29,3 +29,17 @@ def test_negative_stock_rejected():
     with pytest.raises(sqlite3.IntegrityError):
         conn.execute("INSERT INTO Products (ProductID, SKU, Name, Category, SupplierID, UnitPrice, CurrentStock, ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "TOOL", "Hammer", "Tools", 1, 1000, -1, 5))
 
+def test_invalid_reason():
+    conn = connect(":memory:")
+    create_schema(conn)
+    conn.execute("INSERT INTO Suppliers (SupplierID, Name) VALUES (?, ?)", (1, "Julian"))
+    conn.execute("INSERT INTO Products (ProductID, SKU, Name, Category, SupplierID, UnitPrice, CurrentStock, ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "TOOL", "Hammer", "Tools", 1, 1000, 5, 5))
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("INSERT INTO StockMovements (MovementID, ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?, ?)", (1, 1, 50, 'test', "Today"))
+
+def test_no_foreign_key():
+    conn = connect(":memory:")
+    create_schema(conn)
+    conn.execute("INSERT INTO Suppliers (SupplierID, Name) VALUES (?, ?)", (1, "Julian"))
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("INSERT INTO Products (ProductID, SKU, Name, Category, SupplierID, UnitPrice, CurrentStock, ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "TOOL", "Hammer", "Tools", 2, 1000, 1, 5))

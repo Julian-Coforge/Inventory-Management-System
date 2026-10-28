@@ -11,3 +11,4 @@ def connect(path: str):
 def create_schema(conn):
     sql = (Path(__file__).parent / "schema.sql").read_text()
     conn.executescript(sql)
+
