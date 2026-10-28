@@ -8,7 +8,7 @@ from inventory_db import connect, create_schema, seed, add_product, get_product,
 def test_add_product(inventory_database):
     new_id = add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 2, 4999, 15, 10)
     row = inventory_database.execute(
-        "SELECT ProductID, Name FROM Products WHERE ProductID = ?", (new_id,)
+        "SELECT Name, UnitPrice FROM Products WHERE ProductID = ?", (new_id,)
     ).fetchone()
     assert row["Name"] == "Powerdrill"
     assert row["UnitPrice"] == 4999
