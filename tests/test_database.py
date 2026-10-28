@@ -1,5 +1,5 @@
 import sqlite3
-from inventory_db import connect, create_schema
+from inventory_db import connect, create_schema, seed
 import pytest
 
 
@@ -43,3 +43,13 @@ def test_no_foreign_key():
     conn.execute("INSERT INTO Suppliers (SupplierID, Name) VALUES (?, ?)", (1, "Julian"))
     with pytest.raises(sqlite3.IntegrityError):
         conn.execute("INSERT INTO Products (ProductID, SKU, Name, Category, SupplierID, UnitPrice, CurrentStock, ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "TOOL", "Hammer", "Tools", 2, 1000, 1, 5))
+
+def test_seed():
+    conn = connect(":memory:")
+    create_schema(conn)
+    seed(conn)
+    row_product = conn.execute("SELECT COUNT(*) FROM Products").fetchone()
+    row_supplier = conn.execute("SELECT COUNT(*) FROM Suppliers").fetchone()
+    assert row_product[0] == 4
+    assert row_supplier[0] == 2
+
