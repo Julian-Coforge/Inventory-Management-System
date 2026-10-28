@@ -60,15 +60,31 @@ def seed(conn):
     conn.commit()
 
 def add_product(conn, sku: str, name: str, category: str, supplier_id: int, unit_price: int, current_stock: int, reorder_level: int):
+    
+    if unit_price < 0:
+        raise NegativePriceError("Price cannot be negative")
+    if current_stock < 0:
+        raise NegativeQuantityError("Stock cannot be negative")
+    if reorder_level < 0:
+        raise NegativeQuantityError("Reorder level cannot be negative")
+    
     product_tuple = (sku, name, category, supplier_id, unit_price, current_stock, reorder_level)
-    cursor = conn.execute(
-        """INSERT INTO Products (SKU, Name, 
-        Category, SupplierID, UnitPrice, CurrentStock, 
-        ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        product_tuple
-    )
-    conn.commit()
-    return cursor.lastrowid
+    
+    try:
+        cursor = conn.execute(
+            """INSERT INTO Products (SKU, Name, 
+            Category, SupplierID, UnitPrice, CurrentStock, 
+            ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            product_tuple
+        )
+        conn.commit()
+        return cursor.lastrowid
+    except sqlite3.IntegrityError as e:
+        if "UNIQUE" in str(e):
+            raise DuplicateSKUError("That SKU already exists") from e
+        if "FOREIGN KEY" in str(e):
+            raise UnknownSupplierError("That supplier does not exist")
+        raise
 
 def get_product(conn, sku: str):
     product = conn.execute(

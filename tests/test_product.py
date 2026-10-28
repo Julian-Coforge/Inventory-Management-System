@@ -37,3 +37,6 @@ def test_search_product_category(inventory_database):
 def test_search_products_no_filters(inventory_database):
     results = search_products(inventory_database)
     assert len(results) == 4
+
+def test_duplicate_sku(inventory_database):
+    
