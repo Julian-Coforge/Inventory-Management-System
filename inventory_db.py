@@ -40,3 +40,15 @@ def seed(conn):
     """, products)
 
     conn.commit()
+
+def add_product(conn, sku: str, name: str, category: str, supplierID: int, unit_price: int, current_stock: int, reorder_level: int):
+    product_tuple = (sku, name, category, supplierID, unit_price, current_stock, reorder_level)
+    cursor = conn.execute(
+        """INSERT INTO Products (SKU, Name, 
+        Category, SupplierID, UnitPrice, CurrentStock, 
+        ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        product_tuple
+    )
+    conn.commit()
+    return cursor.lastrowid
+
