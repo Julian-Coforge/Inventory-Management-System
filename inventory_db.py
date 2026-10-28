@@ -1,5 +1,5 @@
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 
 def connect(path: str):
@@ -21,7 +21,7 @@ def seed(conn):
     products = [
         (1, "TOOL-Hammer", "Hammer", "Tool", 1, 1500, 25, 5),
         (2, "MAT-WoodPlank", "Wooden Plank", "Material", 2, 800, 100, 20),
-        (3, "MAT-SteelSheet", "Steel Sheet", "Material", 2, 2500, 5, 10),g
+        (3, "MAT-SteelSheet", "Steel Sheet", "Material", 2, 2500, 5, 10),
         (4, "TOOL-PhillipsScrewdriver", "Phillips Head Screwdriver",
          "Tool", 1, 1200, 30, 5),
     ]

@@ -1,6 +1,8 @@
 import sqlite3
-from inventory_db import connect, create_schema, seed
+
 import pytest
+
+from inventory_db import connect, create_schema, seed
 
 
 def test_foreign_keys_are_on():
