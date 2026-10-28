@@ -1,4 +1,6 @@
+import sqlite3
 from inventory_db import connect, create_schema
+import pytest
 
 
 def test_foreign_keys_are_on():
@@ -12,3 +14,18 @@ def test_table_exists():
     row = conn.execute(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",("Products",),).fetchone()
     assert row is not None
+
+def test_refuse_wrong_data():
+    conn = connect(":memory:")
+    create_schema(conn)
+    conn.execute("INSERT INTO Suppliers (SupplierID, Name) VALUES (?, ?)", (1, "Julian"))
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("INSERT INTO Suppliers (Phone) VALUES (?)", ("Julian",))
+
+def test_negative_stock_rejected():
+    conn = connect(":memory:")
+    create_schema(conn)
+    conn.execute("INSERT INTO Suppliers (SupplierID, Name) VALUES (?, ?)", (1, "Julian"))
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("INSERT INTO Products (ProductID, SKU, Name, Category, SupplierID, UnitPrice, CurrentStock, ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "TOOL", "Hammer", "Tools", 1, 1000, -1, 5))
+
