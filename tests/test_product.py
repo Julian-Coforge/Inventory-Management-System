@@ -2,7 +2,19 @@ import sqlite3
 
 import pytest
 
-from inventory_db import add_product, get_product, change_price, delete_product, search_products, record_sale, DuplicateSKUError, NegativeQuantityError, NegativePriceError, ProductHasSalesError, UnknownSupplierError
+from inventory_db import (
+    DuplicateSKUError,
+    NegativePriceError,
+    NegativeQuantityError,
+    ProductHasSalesError,
+    UnknownSupplierError,
+    add_product,
+    change_price,
+    delete_product,
+    get_product,
+    record_sale,
+    search_products,
+)
 
 
 def test_add_product(inventory_database):
