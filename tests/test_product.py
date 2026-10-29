@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from inventory_db import add_product, get_product, change_price, delete_product, search_products, DuplicateSKUError, NegativeQuantityError, NegativePriceError, ProductHasSalesError, UnknownSupplierError
+from inventory_db import add_product, get_product, change_price, delete_product, search_products, record_sale, DuplicateSKUError, NegativeQuantityError, NegativePriceError, ProductHasSalesError, UnknownSupplierError
 
 
 def test_add_product(inventory_database):
@@ -54,3 +54,25 @@ def test_negative_quantity_rejected(inventory_database):
     with pytest.raises(NegativeQuantityError):
         add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 2, 4999, -1, 10)
 
+def test_good_path(inventory_database):
+    before = get_product(inventory_database, "TOOL-Hammer")
+    sale_id = record_sale(inventory_database, [("TOOL-Hammer", 2)])
+    after = get_product(inventory_database, "TOOL-Hammer")["CurrentStock"]
+    assert after == before["CurrentStock"] - 2
+    assert sale_id
+
+def test_sale_writes_rows(inventory_database):
+    sale_id = record_sale(inventory_database, [("TOOL-Hammer", 2)])
+    product = get_product(inventory_database, "TOOL-Hammer")
+
+    item = inventory_database.execute(
+        "SELECT Quantity FROM SaleItems WHERE SaleID = ?", (sale_id,)
+    ).fetchone()
+    assert item["Quantity"] == 2
+
+    log = inventory_database.execute(
+        "SELECT Change, Reason FROM StockMovements WHERE ProductID = ? AND Reason = 'sale'",
+        (product["ProductID"],),
+    ).fetchone()
+    assert log["Change"] == -2
+    assert log["Reason"] == "sale"
