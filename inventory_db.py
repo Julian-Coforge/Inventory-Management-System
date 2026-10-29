@@ -2,6 +2,30 @@ import sqlite3
 from pathlib import Path
 
 
+class ProductError(Exception):
+    """Base for all product rule errors."""
+
+class DuplicateSKUError(ProductError):
+    pass
+
+class UnknownSupplierError(ProductError):
+    pass
+
+class NegativePriceError(ProductError):
+    pass
+
+class NegativeQuantityError(ProductError):
+    pass
+
+class ProductHasSalesError(ProductError):
+    pass
+
+class UnknownSKUError(ProductError):
+    pass
+
+class EmptySaleError(ProductError):
+    pass
+
 def connect(path: str):
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA foreign_keys = ON")
@@ -40,3 +64,117 @@ def seed(conn):
     """, products)
 
     conn.commit()
+
+def add_product(conn, sku: str, name: str, category: str, supplier_id: int, unit_price: int, current_stock: int, reorder_level: int):
+    
+    if unit_price < 0:
+        raise NegativePriceError("Price cannot be negative")
+    if current_stock < 0:
+        raise NegativeQuantityError("Stock cannot be negative")
+    if reorder_level < 0:
+        raise NegativeQuantityError("Reorder level cannot be negative")
+    
+    product_tuple = (sku, name, category, supplier_id, unit_price, current_stock, reorder_level)
+    
+    try:
+        cursor = conn.execute(
+            """INSERT INTO Products (SKU, Name, 
+            Category, SupplierID, UnitPrice, CurrentStock, 
+            ReorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            product_tuple
+        )
+        conn.commit()
+        return cursor.lastrowid
+    except sqlite3.IntegrityError as e:
+        if "UNIQUE" in str(e):
+            raise DuplicateSKUError("That SKU already exists") from e
+        if "FOREIGN KEY" in str(e):
+            raise UnknownSupplierError("That supplier does not exist")
+        raise
+
+def get_product(conn, sku: str):
+    product = conn.execute(
+        """SELECT Products.* , Suppliers.Name AS SupplierName
+        FROM Products 
+        JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
+        WHERE Products.SKU = ?""",
+        (sku,)
+    ).fetchone()
+    return product
+
+def change_price(conn, sku: str, new_price: int):
+
+    if new_price < 0:
+        raise NegativePriceError("Price cannot be below zero")
+
+    price_tuple = (new_price, sku)
+    conn.execute(
+        """UPDATE Products SET UnitPrice = ? WHERE SKU = ?""",
+        price_tuple
+    )
+    conn.commit()
+
+def delete_product(conn, sku: str):
+
+    product = get_product(conn, sku)
+
+    if product is None:
+        raise UnknownSKUError("Cannot find product")
+
+    count = conn.execute(
+        """SELECT COUNT(*) FROM SaleItems WHERE ProductID = ?""",
+        (product["ProductID"],)
+    ).fetchone()[0]
+
+    if count > 0:
+        raise ProductHasSalesError("Cannot delete a product with sales history")
+    
+    conn.execute(
+        """DELETE FROM Products WHERE SKU = ?""",
+        (sku,)
+    )
+    conn.commit()
+
+def search_products(conn, category=None, max_price=None, low_stock=False):
+    sql = "SELECT * FROM Products"
+    conditions = []
+    params = []
+    if category is not None:
+        conditions.append("Category = ?")
+        params.append(category)
+    if max_price is not None:
+        conditions.append("UnitPrice <= ?")
+        params.append(max_price)
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+    return conn.execute(sql, params).fetchall()
+
+def record_sale(conn, items):
+
+    for sku, quantity in items:
+        if quantity <= 0:
+            raise NegativeQuantityError("Quantity must be at least 1")
+         
+    if not items:
+        raise EmptySaleError("The list has no items")
+    
+    with conn:
+        cur = conn.execute("INSERT INTO Sales DEFAULT VALUES")
+        sale_id = cur.lastrowid
+        for sku, quantity in items:
+            product = get_product(conn, sku)
+            if product is None:
+                raise UnknownSKUError("Provided SKU does not match any in database")
+            conn.execute(
+                "UPDATE Products SET CurrentStock = CurrentStock - ? WHERE ProductID = ?",
+                (quantity, product["ProductID"],),
+            )
+            conn.execute(
+                "INSERT INTO SaleItems (SaleID, ProductID, Quantity, PriceAtSale) VALUES (?, ?, ?, ?)",
+                (sale_id, product["ProductID"], quantity, product["UnitPrice"],)
+            )
+            conn.execute(
+                "INSERT INTO StockMovements (ProductID, Change, Reason) VALUES (?, ?, ?)",
+                (product["ProductID"], -quantity, 'sale')
+            )
+    return sale_id
