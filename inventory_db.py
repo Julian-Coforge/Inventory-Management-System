@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from datetime import datetime
 
 
 class ProductError(Exception):
@@ -24,6 +25,12 @@ class UnknownSKUError(ProductError):
     pass
 
 class EmptySaleError(ProductError):
+    pass
+
+class NoChangeError(ProductError):
+    pass
+
+class AdjustBelowZeroError(ProductError):
     pass
 
 def connect(path: str):
@@ -231,3 +238,45 @@ def never_sold_report(conn):
         ).fetchall()
 
     return result
+
+def restock(conn, sku, amount, when=None):
+    if amount <= 0:
+        raise NegativeQuantityError("Restock amount must be at least 1")
+
+    product = get_product(conn, sku)
+    if product is None:
+        raise UnknownSKUError(f"No product {sku}")
+    if when is None:
+        when = datetime.now().isoformat()
+    with conn:
+        conn.execute(
+            "UPDATE Products SET CurrentStock = CurrentStock + ? WHERE ProductID = ?",
+            (amount, product["ProductID"]),
+        )
+        conn.execute(
+            "INSERT INTO StockMovements (ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?)",
+            (product["ProductID"], amount, "restock", when),
+        )    
+
+def adjust(conn, sku, change, when=None):
+    if change == 0:
+        raise NoChangeError("Change is 0, log would be useless")
+
+    product = get_product(conn, sku)
+    if product is None:
+        raise UnknownSKUError(f"No product {sku}")
+
+    if product["CurrentStock"] + change < 0:
+        raise AdjustBelowZeroError("Adjustment would make stock negative")
+    
+    if when is None:
+        when = datetime.now().isoformat()
+    with conn:
+        conn.execute(
+            "UPDATE Products SET CurrentStock = CurrentStock + ? WHERE ProductID = ?",
+            (change, product["ProductID"]),
+        )
+        conn.execute(
+            "INSERT INTO StockMovements (ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?)",
+            (product["ProductID"], change, "adjustment", when),
+        )   
