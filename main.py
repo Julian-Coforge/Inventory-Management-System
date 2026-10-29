@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from datetime import datetime
+from seed_db import seed
 from inventory_db import (
     DuplicateSKUError,
     NegativePriceError,
@@ -20,7 +22,8 @@ from inventory_db import (
     sales_by_product_report,
     stock_value_by_supplier_report,
     restock,
-    adjust
+    adjust,
+    backup
 )
 
 
@@ -80,7 +83,7 @@ def menu_search(conn):
         print(f"\n RESULT FOUND: {row['SKU']} {row['Name']} £{row['UnitPrice'] / 100:.2f} {row['CurrentStock']}")
 
 def menu_lookup(conn):
-    sku = input("Enter product SKU: ").strip
+    sku = input("Enter product SKU: ").strip()
     result = get_product(conn, sku)
     if result is None:
         print("\nNo product with that SKU")
@@ -160,7 +163,7 @@ def menu_sale_by_product(conn):
     if not rows:
         print("There are no sales")
         return
-    print(f"{'SKU':<28}{'Name':<28}{'Units':>7}${'Revenue':>11f}")
+    print(f"{'SKU':<28}{'Name':<28}{'Units':>7}{'Revenue':>11}")
     for row in rows:
         print(f"{row['ProductSKU']:<28}{row['Name']:<28}{row['UnitsSold']:>7}${row['Revenue'] / 100:>10.2f}")
 
@@ -172,6 +175,12 @@ def menu_never_sold(conn):
     print(f"{'SKU':<28}{'Name':<28}")
     for row in rows:
         print(f"{row['ProductSKU']:<28}{row['Name']:<28}")
+
+def menu_backup(conn):
+    filename = f"backup-{datetime.now():%Y%m%d-%H%M%S}.db"
+    backup_path = Path(get_db_path()).parent / filename
+    backup(conn, backup_path)
+    print(f"Backup saved to {backup_path}")
 
 def main():
 
@@ -216,11 +225,11 @@ def main():
         elif option == "6":
             menu_stock_value_report(conn)
         elif option == "7":
-            print("Report: low stock")
+            menu_low_stock(conn)
         elif option == "8":
-            print("Report: sales by product")
+            menu_sale_by_product(conn)
         elif option == "9":
-            print("Report: never sold")
+            menu_never_sold(conn)
         elif option == "10":
             print("Back up the database")
         elif option == "0":
