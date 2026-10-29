@@ -20,6 +20,12 @@ class NegativeQuantityError(ProductError):
 class ProductHasSalesError(ProductError):
     pass
 
+class UnknownSKUError(ProductError):
+    pass
+
+class EmptySaleError(ProductError):
+    pass
+
 def connect(path: str):
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA foreign_keys = ON")
@@ -122,3 +128,32 @@ def search_products(conn, category=None, max_price=None, low_stock=False):
         sql += " WHERE " + " AND ".join(conditions)
     return conn.execute(sql, params).fetchall()
 
+def record_sale(conn, items):
+
+    for sku, quantity in items:
+        if quantity <= 0:
+            raise NegativeQuantityError("Quantity must be at least 1")
+         
+    if not items:
+        raise EmptySaleError("The list has no items")
+    
+    with conn:
+        cur = conn.execute("INSERT INTO Sales DEFAULT VALUES")
+        sale_id = cur.lastrowid
+        for sku, quantity in items:
+            product = get_product(conn, sku)
+            if product is None:
+                raise UnknownSKUError("Provided SKU does not match any in database")
+            conn.execute(
+                "UPDATE Products SET CurrentStock = CurrentStock - ? WHERE ProductID = ?",
+                (quantity, product["ProductID"],),
+            )
+            conn.execute(
+                "INSERT INTO SaleItems (SaleID, ProductID, Quantity, PriceAtSale) VALUES (?, ?, ?, ?)",
+                (sale_id, product["ProductID"], quantity, product["UnitPrice"],)
+            )
+            conn.execute(
+                "INSERT INTO StockMovements (ProductID, Change, Reason) VALUES (?, ?, ?)",
+                (product["ProductID"], -quantity, 'sale')
+            )
+    return sale_id

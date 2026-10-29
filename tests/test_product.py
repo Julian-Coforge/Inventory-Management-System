@@ -50,8 +50,7 @@ def test_unknown_supplier(inventory_database):
     with pytest.raises(UnknownSupplierError):
         add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 99, 4999, 15, 10)
 
-def test_negative_quantity_error(inventory_database):
+def test_negative_quantity_rejected(inventory_database):
     with pytest.raises(NegativeQuantityError):
         add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 2, 4999, -1, 10)
 
-    

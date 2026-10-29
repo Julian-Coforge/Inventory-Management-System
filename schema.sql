@@ -37,5 +37,5 @@ CREATE TABLE IF NOT EXISTS StockMovements(
     ProductID INTEGER NOT NULL REFERENCES Products(ProductID),
     Change INTEGER NOT NULL,
     Reason TEXT NOT NULL CHECK (Reason IN ('restock', 'adjustment', 'sale')),
-    WhenHappened TEXT NOT NULL
+    WhenHappened TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
