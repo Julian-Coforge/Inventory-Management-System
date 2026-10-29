@@ -33,6 +33,9 @@ class NoChangeError(ProductError):
 class AdjustBelowZeroError(ProductError):
     pass
 
+class DuplicateSaleLineError(ProductError):
+    pass
+
 def connect(path: str):
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA foreign_keys = ON")
@@ -167,22 +170,30 @@ def search_products(conn, category=None, max_price=None, low_stock=False, text=N
     sql += " ORDER BY Products.Name"
     return conn.execute(sql, params).fetchall()
 
-def record_sale(conn, items):
+def record_sale(conn, items, when=None):
+
+    if not items:
+        raise EmptySaleError("The list has no items")
 
     for sku, quantity in items:
         if quantity <= 0:
             raise NegativeQuantityError("Quantity must be at least 1")
-         
-    if not items:
-        raise EmptySaleError("The list has no items")
+
+    if when is None:
+        when = datetime.now().isoformat()
+
+    skus = [sku for sku, quantity in items]
+
+    if len(skus) != len(set(skus)):
+        raise DuplicateSaleLineError("Duplicate product detected")
     
     with conn:
-        cur = conn.execute("INSERT INTO Sales DEFAULT VALUES")
+        cur = conn.execute("INSERT INTO Sales (SaleDateTime) VALUES (?)", (when,))
         sale_id = cur.lastrowid
         for sku, quantity in items:
             product = get_product(conn, sku)
             if product is None:
-                raise UnknownSKUError("Provided SKU does not match any in database")
+                raise UnknownSKUError(f"No product {sku}")
             conn.execute(
                 "UPDATE Products SET CurrentStock = CurrentStock - ? WHERE ProductID = ?",
                 (quantity, product["ProductID"],),
@@ -192,8 +203,8 @@ def record_sale(conn, items):
                 (sale_id, product["ProductID"], quantity, product["UnitPrice"],)
             )
             conn.execute(
-                "INSERT INTO StockMovements (ProductID, Change, Reason) VALUES (?, ?, ?)",
-                (product["ProductID"], -quantity, 'sale')
+                "INSERT INTO StockMovements (ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?)",
+                (product["ProductID"], -quantity, 'sale', when,)
             )
     return sale_id
 
@@ -256,7 +267,7 @@ def restock(conn, sku, amount, when=None):
         conn.execute(
             "INSERT INTO StockMovements (ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?)",
             (product["ProductID"], amount, "restock", when),
-        )    
+        )
 
 def adjust(conn, sku, change, when=None):
     if change == 0:
@@ -268,7 +279,7 @@ def adjust(conn, sku, change, when=None):
 
     if product["CurrentStock"] + change < 0:
         raise AdjustBelowZeroError("Adjustment would make stock negative")
-    
+
     if when is None:
         when = datetime.now().isoformat()
     with conn:
@@ -279,4 +290,4 @@ def adjust(conn, sku, change, when=None):
         conn.execute(
             "INSERT INTO StockMovements (ProductID, Change, Reason, WhenHappened) VALUES (?, ?, ?, ?)",
             (product["ProductID"], change, "adjustment", when),
-        )   
+        )
