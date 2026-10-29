@@ -1,14 +1,14 @@
 import pytest
 
 from inventory_db import (
-    NegativeQuantityError,
     AdjustBelowZeroError,
     DuplicateSaleLineError,
+    NegativeQuantityError,
     UnknownSKUError,
+    adjust,
     get_product,
     record_sale,
     restock,
-    adjust
 )
 
 
