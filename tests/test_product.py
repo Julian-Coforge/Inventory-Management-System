@@ -76,3 +76,21 @@ def test_sale_writes_rows(inventory_database):
     ).fetchone()
     assert log["Change"] == -2
     assert log["Reason"] == "sale"
+
+def test_failed_sale_saves_nothing(inventory_database):
+    quantity_before = get_product(inventory_database, "TOOL-Hammer")["CurrentStock"]
+    sales_before = inventory_database.execute("SELECT COUNT(*) FROM Sales").fetchone()[0]
+
+    with pytest.raises(sqlite3.IntegrityError):
+        record_sale(inventory_database, [("TOOL-Hammer", quantity_before + 1)])
+
+    quantity_after = get_product(inventory_database, "TOOL-Hammer")["CurrentStock"]
+    sales_after = inventory_database.execute("SELECT COUNT(*) FROM Sales").fetchone()[0]
+    assert quantity_after == quantity_before
+    assert sales_after == sales_before
+
+def test_delete_product_with_sale_rejected(inventory_database):
+    record_sale(inventory_database, [("TOOL-Hammer", 1)])
+    with pytest.raises(ProductHasSalesError):
+        delete_product(inventory_database, "TOOL-Hammer")
+    assert get_product(inventory_database, "TOOL-Hammer") is not None

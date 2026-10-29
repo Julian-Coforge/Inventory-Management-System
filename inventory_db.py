@@ -108,6 +108,20 @@ def change_price(conn, sku: str, new_price: int):
     conn.commit()
 
 def delete_product(conn, sku: str):
+
+    product = get_product(conn, sku)
+
+    if product is None:
+        raise UnknownSKUError("Cannot find product")
+
+    count = conn.execute(
+        """SELECT COUNT(*) FROM SaleItems WHERE ProductID = ?""",
+        (product["ProductID"],)
+    ).fetchone()[0]
+
+    if count > 0:
+        raise ProductHasSalesError("Cannot delete a product with sales history")
+    
     conn.execute(
         """DELETE FROM Products WHERE SKU = ?""",
         (sku,)
