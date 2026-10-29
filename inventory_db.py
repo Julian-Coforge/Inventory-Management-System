@@ -214,10 +214,20 @@ def low_stock_report(conn):
 
 def sales_by_product_report(conn):
     result = conn.execute(
-            """SELECT Products.SKU AS ProductSKU, Products.Name, Products.CurrentStock,
-            Products.ReorderLevel, Products.ReorderLevel - Products.CurrentStock AS UnitsShort
-            FROM Products WHERE Products.CurrentStock <= Products.ReorderLevel
-            ORDER BY UnitsShort DESC"""
+            """SELECT Products.SKU AS ProductSKU, Products.Name,
+            SUM(SaleItems.Quantity) AS UnitsSold,
+            SUM(SaleItems.Quantity * SaleItems.PriceAtSale) AS Revenue
+            FROM SaleItems JOIN Products ON SaleItems.ProductID = Products.ProductID
+            GROUP BY Products.ProductID ORDER BY Revenue DESC"""
+        ).fetchall()
+
+    return result
+
+def never_sold_report(conn):
+    result = conn.execute(
+            """SELECT Products.SKU AS ProductSKU, Products.Name
+            FROM Products LEFT JOIN SaleItems ON Products.ProductID = SaleItems.ProductID
+            WHERE SaleItems.SaleItemID IS NULL ORDER BY Products.Name"""
         ).fetchall()
 
     return result
