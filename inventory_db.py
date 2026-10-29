@@ -94,12 +94,19 @@ def add_product(conn, sku: str, name: str, category: str, supplier_id: int, unit
 
 def get_product(conn, sku: str):
     product = conn.execute(
-        """SELECT * FROM Products WHERE SKU = ?""",
+        """SELECT Products.* , Suppliers.Name AS SupplierName
+        FROM Products 
+        JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
+        WHERE Products.SKU = ?""",
         (sku,)
     ).fetchone()
     return product
 
 def change_price(conn, sku: str, new_price: int):
+
+    if new_price < 0:
+        raise NegativePriceError("Price cannot be below zero")
+
     price_tuple = (new_price, sku)
     conn.execute(
         """UPDATE Products SET UnitPrice = ? WHERE SKU = ?""",

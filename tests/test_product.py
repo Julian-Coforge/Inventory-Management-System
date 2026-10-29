@@ -94,3 +94,11 @@ def test_delete_product_with_sale_rejected(inventory_database):
     with pytest.raises(ProductHasSalesError):
         delete_product(inventory_database, "TOOL-Hammer")
     assert get_product(inventory_database, "TOOL-Hammer") is not None
+
+def test_get_product_includes_author_name(inventory_database):
+    product = get_product(inventory_database, "TOOL-Hammer")
+    assert product["SupplierID"] == 1
+
+def test_negative_price_on_update_rejected(inventory_database):
+    with pytest.raises(NegativePriceError):
+        change_price(inventory_database, "TOOL-Hammer", -1)
