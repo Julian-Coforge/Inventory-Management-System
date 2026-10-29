@@ -135,7 +135,7 @@ def delete_product(conn, sku: str):
     )
     conn.commit()
 
-def search_products(conn, category=None, max_price=None, low_stock=False, text=None):
+def search_products(conn, category=None, max_price=None, low_stock=False, text=None, in_stock=False):
     sql = """SELECT Products.* , Suppliers.Name AS SupplierName FROM Products 
             JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID"""
     conditions = []
@@ -150,8 +150,14 @@ def search_products(conn, category=None, max_price=None, low_stock=False, text=N
         pattern = f"%{text}%"
         conditions.append("(Products.Name LIKE ? OR Products.SKU LIKE ? OR Suppliers.Name LIKE ?)")
         params.extend([pattern, pattern, pattern])
+    if low_stock:
+        conditions.append("Products.CurrentStock <= Products.ReorderLevel")
+    if in_stock:
+        conditions.append("Products.CurrentStock > 0")
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
+
+    sql += " ORDER BY Products.Name"
     return conn.execute(sql, params).fetchall()
 
 def record_sale(conn, items):
