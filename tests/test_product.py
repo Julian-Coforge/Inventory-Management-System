@@ -107,9 +107,9 @@ def test_delete_product_with_sale_rejected(inventory_database):
         delete_product(inventory_database, "TOOL-Hammer")
     assert get_product(inventory_database, "TOOL-Hammer") is not None
 
-def test_get_product_includes_author_name(inventory_database):
+def test_get_product_includes_supplier_name(inventory_database):
     product = get_product(inventory_database, "TOOL-Hammer")
-    assert product["SupplierID"] == 1
+    assert product["SupplierName"] == "Tools Inc"
 
 def test_negative_price_on_update_rejected(inventory_database):
     with pytest.raises(NegativePriceError):
@@ -125,7 +125,12 @@ def test_search_product_name(inventory_database):
     names = {row["Name"] for row in results}
     assert names == {"Hammer"}
 
-def test_search_supplier_name(inventory_database):
+def test_search_SKU_name(inventory_database):
     results = search_products(inventory_database, text="TOOL")
     names = {row["Name"] for row in results}
     assert names == {"Phillips Head Screwdriver", "Hammer"}
+
+def test_search_injection_is_harmless(inventory_database):
+    results = search_products(inventory_database, text="'; DROP TABLE Products; --")
+    assert results == []
+    assert len(search_products(inventory_database)) == 4
