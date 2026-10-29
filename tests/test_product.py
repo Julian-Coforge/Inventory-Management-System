@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from inventory_db import add_product, get_product, change_price, delete_product, search_products
+from inventory_db import add_product, get_product, change_price, delete_product, search_products, DuplicateSKUError, NegativeQuantityError, NegativePriceError, ProductHasSalesError, UnknownSupplierError
 
 
 def test_add_product(inventory_database):
@@ -38,5 +38,20 @@ def test_search_products_no_filters(inventory_database):
     results = search_products(inventory_database)
     assert len(results) == 4
 
-def test_duplicate_sku(inventory_database):
+def test_duplicate_SKU_rejected(inventory_database):
+    with pytest.raises(DuplicateSKUError):
+        add_product(inventory_database, "TOOL-Hammer", "Hammer", "Tool", 2, 4999, 15, 10)
+
+def test_negative_price_rejected(inventory_database):
+    with pytest.raises(NegativePriceError):
+        add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 2, -4999, 15, 10)
+
+def test_unknown_supplier(inventory_database):
+    with pytest.raises(UnknownSupplierError):
+        add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 99, 4999, 15, 10)
+
+def test_negative_quantity_error(inventory_database):
+    with pytest.raises(NegativeQuantityError):
+        add_product(inventory_database, "TOOL-Powerdrill", "Powerdrill", "Tool", 2, 4999, -1, 10)
+
     
