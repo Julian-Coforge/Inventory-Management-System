@@ -129,10 +129,49 @@ def menu_restock(conn):
 def menu_sale(conn):
     items = []
     while True:
-        sku = input("Enter product SKU: ").strip()
-        if sku is None:
+        sku = input("Enter product SKU (or Enter to finish): ").strip()
+        if not sku:
             break
         quantity = ask_int("Enter quantity: ")
+        items.append((sku, quantity))
+    sale_id = record_sale(conn, items)
+    print(f"Sale {sale_id} recorded ({len(items)} lines)")
+
+def menu_stock_value_report(conn):
+    rows = stock_value_by_supplier_report(conn)
+    if not rows:
+        print("No products in stock")
+        return
+    print(f"{'Supplier':<20}{'Value':>11}")
+    for row in rows:
+        print(f"{row['SupplierName']:<20}${row['StockValue'] / 100:>10.2f}")
+
+def menu_low_stock(conn):
+    rows = low_stock_report(conn)
+    if not rows:
+        print("All products are above their reorder level")
+        return
+    print(f"{'SKU':<28}{'Name':<28}{'Stock':>7}{'Reorder':>9}{'Short':>7}")
+    for row in rows:
+        print(f"{row['ProductSKU']:<28}{row['Name']:<28}{row['CurrentStock']:>7}{row['ReorderLevel']:>9}{row['UnitsShort']:>7}")
+
+def menu_sale_by_product(conn):
+    rows = sales_by_product_report(conn)
+    if not rows:
+        print("There are no sales")
+        return
+    print(f"{'SKU':<28}{'Name':<28}{'Units':>7}${'Revenue':>11f}")
+    for row in rows:
+        print(f"{row['ProductSKU']:<28}{row['Name']:<28}{row['UnitsSold']:>7}${row['Revenue'] / 100:>10.2f}")
+
+def menu_never_sold(conn):
+    rows = never_sold_report(conn)
+    if not rows:
+        print("Everything has had a sale")
+        return
+    print(f"{'SKU':<28}{'Name':<28}")
+    for row in rows:
+        print(f"{row['ProductSKU']:<28}{row['Name']:<28}")
 
 def main():
 
@@ -175,7 +214,7 @@ def main():
         elif option == "5":
             menu_sale(conn)
         elif option == "6":
-            print("Report: stock value by supplier")
+            menu_stock_value_report(conn)
         elif option == "7":
             print("Report: low stock")
         elif option == "8":
