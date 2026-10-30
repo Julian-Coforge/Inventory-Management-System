@@ -11,6 +11,7 @@ from inventory_db import (
     create_schema,
     get_db_path,
     get_product,
+    low_stock_banner,
     low_stock_report,
     never_sold_report,
     record_sale,
@@ -183,6 +184,8 @@ def main():
         create_schema(conn)
         seed(conn)
         print("\n\nThe database is ready!")
+        print("\n")
+        print(low_stock_banner(conn))
         print("\n=====================================================\n")
 
         try:
