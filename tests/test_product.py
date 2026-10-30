@@ -38,17 +38,17 @@ def test_change_product_price(inventory_database):
     assert row["UnitPrice"] == 2000
 
 def test_delete_product(inventory_database):
-    delete_product(inventory_database, "TOOL-Hammer")
-    assert get_product(inventory_database, "TOOL-Hammer") is None
+    delete_product(inventory_database, "PAINT-Primer")
+    assert get_product(inventory_database, "PAINT-Primer") is None
 
 def test_search_product_category(inventory_database):
     results = search_products(inventory_database, category="Tool")
     names = {row["Name"] for row in results}
-    assert names == {"Phillips Head Screwdriver", "Hammer"}
+    assert names == {"Hammer", "Phillips Head Screwdriver", "Electric Drill"}
 
 def test_search_products_no_filters(inventory_database):
     results = search_products(inventory_database)
-    assert len(results) == 4
+    assert len(results) == 12
 
 def test_duplicate_SKU_rejected(inventory_database):
     with pytest.raises(DuplicateSKUError):
@@ -118,7 +118,7 @@ def test_negative_price_on_update_rejected(inventory_database):
 def test_search_supplier_name(inventory_database):
     results = search_products(inventory_database, text="China")
     names = {row["Name"] for row in results}
-    assert names == {"Wooden Plank", "Steel Sheet"}
+    assert names == {"Wooden Plank", "Steel Sheet", "Plywood Sheet"}
 
 def test_search_product_name(inventory_database):
     results = search_products(inventory_database, text="Ham")
@@ -128,9 +128,9 @@ def test_search_product_name(inventory_database):
 def test_search_SKU_name(inventory_database):
     results = search_products(inventory_database, text="TOOL")
     names = {row["Name"] for row in results}
-    assert names == {"Phillips Head Screwdriver", "Hammer"}
+    assert names == {"Phillips Head Screwdriver", "Hammer", "Electric Drill"}
 
 def test_search_injection_is_harmless(inventory_database):
     results = search_products(inventory_database, text="'; DROP TABLE Products; --")
     assert results == []
-    assert len(search_products(inventory_database)) == 4
+    assert len(search_products(inventory_database)) == 12
