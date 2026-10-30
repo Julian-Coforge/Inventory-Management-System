@@ -1,13 +1,10 @@
 import os
+import sqlite3
 from pathlib import Path
 from datetime import datetime
 from seed_db import seed
 from inventory_db import (
-    DuplicateSKUError,
-    NegativePriceError,
-    NegativeQuantityError,
-    ProductHasSalesError,
-    UnknownSupplierError,
+    ProductError,
     add_product,
     change_price,
     delete_product,
@@ -48,7 +45,7 @@ def ask_int(prompt: str):
         output = input(prompt).strip()
         if output == '':
             print("\nPlease enter a non null value")
-            pass
+            continue
         try:
             result = int(output)
             return result
@@ -180,7 +177,7 @@ def menu_backup(conn):
     filename = f"backup-{datetime.now():%Y%m%d-%H%M%S}.db"
     backup_path = Path(get_db_path()).parent / filename
     backup(conn, backup_path)
-    print(f"Backup saved to {backup_path}")
+    print(f"\nBackup saved to {backup_path}\n")
 
 def main():
 
@@ -211,31 +208,40 @@ def main():
             "0. Quit\n"
             "Choose an option (please enter the corresponding number): "
         ).strip()
-        
-        if option == "1":
-            menu_search(conn)
-        elif option == "2":
-            menu_lookup(conn)
-        elif option == "3":
-            menu_add(conn)
-        elif option == "4":
-            menu_restock(conn)
-        elif option == "5":
-            menu_sale(conn)
-        elif option == "6":
-            menu_stock_value_report(conn)
-        elif option == "7":
-            menu_low_stock(conn)
-        elif option == "8":
-            menu_sale_by_product(conn)
-        elif option == "9":
-            menu_never_sold(conn)
-        elif option == "10":
-            print("Back up the database")
-        elif option == "0":
-            print("Goodbye!")
-        else:
-            print("Invalid option. Please try again.")
+
+        try:
+            if option == "1":
+                menu_search(conn)
+            elif option == "2":
+                menu_lookup(conn)
+            elif option == "3":
+                menu_add(conn)
+            elif option == "4":
+                menu_restock(conn)
+            elif option == "5":
+                menu_sale(conn)
+            elif option == "6":
+                menu_stock_value_report(conn)
+            elif option == "7":
+                menu_low_stock(conn)
+            elif option == "8":
+                menu_sale_by_product(conn)
+            elif option == "9":
+                menu_never_sold(conn)
+            elif option == "10":
+                menu_backup(conn)
+            elif option == "0":
+                print("\nGoodbye!\n")
+                break
+            else:
+                print("Invalid Option. Please try again.")
+        except ProductError as e:
+            print(e)
+        except sqlite3.IntegrityError:
+            print("No products for sale.")
+        except sqlite3.Error as e:
+            print("There was a problem with the database")
+
 
 
 
