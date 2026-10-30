@@ -1,3 +1,5 @@
+from pathlib import Path
+from inventory_db import connect, create_schema, get_db_path
 
 
 def seed(conn):
@@ -77,3 +79,18 @@ def seed(conn):
     """, sale_items)
 
     conn.commit()
+
+
+def main():
+    path = get_db_path()
+    conn = connect(path)
+    create_schema(conn)
+    seed(conn)
+
+    for table in ["Suppliers", "Products", "Sales", "SaleItems", "StockMovements"]:
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        print(f"{table}: {count}")
+
+
+if __name__ == "__main__": 
+    main()

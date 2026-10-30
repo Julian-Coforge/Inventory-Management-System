@@ -1,10 +1,10 @@
-import os
 import sqlite3
 from pathlib import Path
 from datetime import datetime
 from seed_db import seed
 from inventory_db import (
     ProductError,
+    get_db_path,
     add_product,
     change_price,
     delete_product,
@@ -13,7 +13,6 @@ from inventory_db import (
     search_products,
     connect,
     create_schema,
-    seed,
     low_stock_report,
     never_sold_report,
     sales_by_product_report,
@@ -22,12 +21,6 @@ from inventory_db import (
     adjust,
     backup
 )
-
-
-DEFAULT_DB = Path(__file__).parent / "inventory.db"
-
-def get_db_path():
-    return os.environ.get("INVENTORY_DB", str(DEFAULT_DB))
 
 def ask_optional_int(prompt: str):
     while True:
@@ -241,8 +234,6 @@ def main():
             print("No products for sale.")
         except sqlite3.Error as e:
             print("There was a problem with the database")
-
-
 
 
 if __name__ == "__main__": 

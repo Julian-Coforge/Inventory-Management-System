@@ -1,7 +1,8 @@
 import sqlite3
+import os
+
 from datetime import datetime
 from pathlib import Path
-from seed_db import seed
 
 
 class ProductError(Exception):
@@ -36,6 +37,11 @@ class AdjustBelowZeroError(ProductError):
 
 class DuplicateSaleLineError(ProductError):
     pass
+
+DEFAULT_DB = Path(__file__).parent / "inventory.db"
+
+def get_db_path():
+    return os.environ.get("INVENTORY_DB", str(DEFAULT_DB))
 
 def connect(path: str):
     conn = sqlite3.connect(path)
