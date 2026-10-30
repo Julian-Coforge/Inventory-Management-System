@@ -26,9 +26,7 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
-
       - name: Build the image
         run: docker build -t inventory-app:ci .
-
       - name: Run the tests inside the container
         run: docker run --rm inventory-app:ci python -m pytest
