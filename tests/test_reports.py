@@ -1,4 +1,5 @@
 from inventory_db import (
+    low_stock_banner,
     low_stock_report,
     never_sold_report,
     record_sale,
@@ -41,3 +42,7 @@ def test_never_sold_report(inventory_database):
     skus = {row["ProductSKU"] for row in results}
     assert len(results) == 1
     assert "PAINT-Primer" not in skus
+
+def test_low_stock_banner(inventory_database):
+    result = low_stock_banner(inventory_database)
+    assert "4 products" in result

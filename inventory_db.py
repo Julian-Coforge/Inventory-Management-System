@@ -275,3 +275,9 @@ def backup(conn, path):
         conn.backup(dest)
     finally:
         dest.close()
+
+def low_stock_banner(conn):
+    report = low_stock_report(conn)
+    rows = len(report)
+    output = f"{rows} products are at or below their reorder level."
+    return output
