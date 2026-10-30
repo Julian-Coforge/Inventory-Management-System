@@ -3,7 +3,6 @@ import sqlite3
 import pytest
 
 from inventory_db import connect, create_schema
-
 from seed_db import seed
 
 

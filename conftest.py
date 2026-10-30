@@ -1,8 +1,8 @@
 # Conftest File
 import pytest
 
-from seed_db import seed
 from inventory_db import connect, create_schema
+from seed_db import seed
 
 
 @pytest.fixture

@@ -1,4 +1,3 @@
-from pathlib import Path
 from inventory_db import connect, create_schema, get_db_path
 
 

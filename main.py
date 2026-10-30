@@ -1,26 +1,25 @@
 import sqlite3
-from pathlib import Path
 from datetime import datetime
-from seed_db import seed
+from pathlib import Path
+
 from inventory_db import (
     ProductError,
-    get_db_path,
     add_product,
-    change_price,
-    delete_product,
-    get_product,
-    record_sale,
-    search_products,
+    backup,
     connect,
     create_schema,
+    get_db_path,
+    get_product,
     low_stock_report,
     never_sold_report,
-    sales_by_product_report,
-    stock_value_by_supplier_report,
+    record_sale,
     restock,
-    adjust,
-    backup
+    sales_by_product_report,
+    search_products,
+    stock_value_by_supplier_report,
 )
+from seed_db import seed
+
 
 def ask_optional_int(prompt: str):
     while True:
@@ -231,8 +230,8 @@ def main():
         except ProductError as e:
             print(e)
         except sqlite3.IntegrityError:
-            print("No products for sale.")
-        except sqlite3.Error as e:
+            print("That change breaks a database rule")
+        except sqlite3.Error:
             print("There was a problem with the database")
 
 
