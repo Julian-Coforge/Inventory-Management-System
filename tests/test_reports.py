@@ -1,10 +1,10 @@
 from inventory_db import (
+    low_stock_banner,
     low_stock_report,
     never_sold_report,
     record_sale,
     sales_by_product_report,
     stock_value_by_supplier_report,
-    low_stock_banner
 )
 
 
@@ -45,5 +45,4 @@ def test_never_sold_report(inventory_database):
 
 def test_low_stock_banner(inventory_database):
     result = low_stock_banner(inventory_database)
-    count = len(result)
     assert "4 products" in result
