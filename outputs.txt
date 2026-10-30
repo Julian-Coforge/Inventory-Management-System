@@ -1,0 +1,409 @@
+Seeding Data:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % python seed_db.py
+Suppliers: 4
+Products: 12
+Sales: 5
+SaleItems: 12
+StockMovements: 0
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % python seed_db.py
+Suppliers: 4
+Products: 12
+Sales: 5
+SaleItems: 12
+StockMovements: 0
+
+
+Image Build:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % docker build --no-cache -t inventory:1.1.0 .
+[+] Building 7.0s (11/11) FINISHED                                                                                          docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                                        0.0s
+ => => transferring dockerfile: 246B                                                                                                        0.0s
+ => [internal] load metadata for docker.io/library/python:3.14.10-slim                                                                      0.4s
+ => [internal] load .dockerignore                                                                                                           0.0s
+ => => transferring context: 125B                                                                                                           0.0s
+ => [1/6] FROM docker.io/library/python:3.14.10-slim@sha256:3cabfd7d7aaf394e6040e79fa1eec6ca1c52b74ed9188650472695d9a9326999                0.0s
+ => => resolve docker.io/library/python:3.14.10-slim@sha256:3cabfd7d7aaf394e6040e79fa1eec6ca1c52b74ed9188650472695d9a9326999                0.0s
+ => [internal] load build context                                                                                                           0.0s
+ => => transferring context: 22.40kB                                                                                                        0.0s
+ => CACHED [2/6] WORKDIR /app                                                                                                               0.0s
+ => [3/6] COPY requirements.txt .                                                                                                           0.0s
+ => [4/6] RUN pip install --no-cache-dir -r requirements.txt                                                                                4.4s
+ => [5/6] COPY . .                                                                                                                          0.0s 
+ => [6/6] RUN mkdir -p /data                                                                                                                0.1s 
+ => exporting to image                                                                                                                      2.0s 
+ => => exporting layers                                                                                                                     1.7s 
+ => => exporting manifest sha256:3512449043753a2c100d7b881c87524a814bc1296bbec87251f4adae4ef2ba9d                                           0.0s 
+ => => exporting config sha256:c3228ed9a5d5a39165ae66f05e5d0c43f8829c7dd706cd1738f3d71361842e66                                             0.0s 
+ => => exporting attestation manifest sha256:60fd9cdb0fa7b602634c7fbb8d89cf543345b145a8145563e1629402bf066372                               0.0s
+ => => exporting manifest list sha256:f33513ee57e3a929681d94b074815bc2645914a21ca95f00498896933875f4b4                                      0.0s
+ => => naming to docker.io/library/inventory:1.1.0                                                                                          0.0s
+ => => unpacking to docker.io/library/inventory:1.1.0                                                                                       0.3s
+
+
+Persistence Checks:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % docker run -it --rm -v inventory-data:/data inventory:1.1.0
+
+Welcome the the Inventory Management System!
+
+
+Connecting to Database...
+
+Database connected! Path:/data/inventory.db
+
+
+Creating and seeding Database...
+
+
+The database is ready!
+
+
+4 products are at or below their reorder level.
+
+=====================================================
+
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 3
+Enter product SKU: TEST-Persistance
+Enter product name: Persistant Item
+Enter product category: Test
+Enter supplier ID: 1
+Enter unit price in pence: 1000
+Enter current stock: 1000
+Enter reorder level: 50
+Added Persistant Item (ID 13)
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 0
+
+Goodbye!
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % docker run -it --rm -v inventory-data:/data inventory:1.1.0
+
+Welcome the the Inventory Management System!
+
+
+Connecting to Database...
+
+Database connected! Path:/data/inventory.db
+
+
+Creating and seeding Database...
+
+
+The database is ready!
+
+
+4 products are at or below their reorder level.
+
+=====================================================
+
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 2
+Enter product SKU: TEST-Persistance
+
+RESULT FOUND:
+SKU: TEST-Persistance
+Name: Persistant Item
+Category: Test
+Supplier: Tools Inc
+Unit Price: $10.00
+Current Stock: 1000
+Reorder Level: 50
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 0
+
+Goodbye!
+
+
+Rollback:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % docker run -it --rm -v inventory-data:/data inventory:1.0.0
+
+Welcome the the Inventory Management System!
+
+
+Connecting to Database...
+
+Database connected! Path:/data/inventory.db
+
+
+Creating and seeding Database...
+
+
+The database is ready!
+
+=====================================================
+
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 1
+Search text (press Enter to skip): Test
+Category (press Enter to skip): 
+Max price (press Enter to skip): 
+Low stock? (True/False, press Enter to skip): 
+In stock? (True/False, press Enter to skip): 
+
+ RESULT FOUND: TEST-Persistance Persistant Item $10.00 1000
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 0
+
+Goodbye!
+
+
+Failed Sale:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % python3 main.py
+
+Welcome the the Inventory Management System!
+
+
+Connecting to Database...
+
+Database connected! Path:/Users/Julian.Marchington/Desktop/FDE Course/Week 3/Assignment/Inventory-Management-System/inventory.db
+
+
+Creating and seeding Database...
+
+
+The database is ready!
+
+
+4 products are at or below their reorder level.
+
+=====================================================
+
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 2
+Enter product SKU: TOOL-Hammer
+
+RESULT FOUND:
+SKU: TOOL-Hammer
+Name: Hammer
+Category: Tool
+Supplier: Tools Inc
+Unit Price: $15.00
+Current Stock: 25
+Reorder Level: 5
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 5
+Enter product SKU (or Enter to finish): TOOL-Hammer
+Enter quantity: 1
+Enter product SKU (or Enter to finish): MAT-SteelSheet
+Enter quantity: 999
+Enter product SKU (or Enter to finish): 
+That change breaks a database rule
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 1
+Search text (press Enter to skip): hammer
+Category (press Enter to skip): 
+Max price (press Enter to skip): 
+Low stock? (True/False, press Enter to skip): 
+In stock? (True/False, press Enter to skip): 
+
+ RESULT FOUND: TOOL-Hammer Hammer $15.00 25
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 1
+Search text (press Enter to skip): sheet
+Category (press Enter to skip): 
+Max price (press Enter to skip): 
+Low stock? (True/False, press Enter to skip): 
+In stock? (True/False, press Enter to skip): 
+
+ RESULT FOUND: MAT-Plywood Plywood Sheet $18.00 40
+
+ RESULT FOUND: MAT-SteelSheet Steel Sheet $25.00 5
+
+
+
+1. Search products
+2. Look up a product
+3. Add a product
+4. Restock
+5. Record a sale
+6. Report: stock value by supplier
+7. Report: low stock
+8. Report: sales by product
+9. Report: never sold
+10. Back up the database
+0. Quit
+Choose an option (please enter the corresponding number): 0
+
+Goodbye!
+
+
+Backup Checks:
+
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "PRAGMA integrity_check;"
+╭─────────────────╮
+│ integrity_check │
+╞═════════════════╡
+│ ok              │
+╰─────────────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 inventory.db "SELECT COUNT(*) FROM Products;"
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│       12 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "SELECT COUNT(*) FROM Products;"
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│       12 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "SELECT COUNT(*) FROM Sales;"   
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│        5 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "SELECT COUNT(*) FROM Suppliers;"
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│        4 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "SELECT COUNT(*) FROM SaleItems;"
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│       12 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % sqlite3 backup-20261030-162135.db "SELECT COUNT(*) FROM StockMovements;"
+╭──────────╮
+│ COUNT(*) │
+╞══════════╡
+│        0 │
+╰──────────╯
+(.venv) Julian.Marchington@Julians-MacBook-Pro Inventory-Management-System % 
