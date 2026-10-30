@@ -70,7 +70,7 @@ def menu_search(conn):
     if not results:
         print("No matches.")
     for row in results:
-        print(f"\n RESULT FOUND: {row['SKU']} {row['Name']} £{row['UnitPrice'] / 100:.2f} {row['CurrentStock']}")
+        print(f"\n RESULT FOUND: {row['SKU']} {row['Name']} ${row['UnitPrice'] / 100:.2f} {row['CurrentStock']}")
 
 def menu_lookup(conn):
     sku = input("Enter product SKU: ").strip()
@@ -84,7 +84,7 @@ def menu_lookup(conn):
     print(f"Name: {result['Name']}")
     print(f"Category: {result['Category']}")
     print(f"Supplier: {result['SupplierName']}")
-    print(f"Unit Price: £{result['UnitPrice'] / 100:.2f}")
+    print(f"Unit Price: ${result['UnitPrice'] / 100:.2f}")
     print(f"Current Stock: {result['CurrentStock']}")
     print(f"Reorder Level: {result['ReorderLevel']}")
 

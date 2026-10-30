@@ -1,0 +1,10 @@
+.venv/
+.git/
+.idea/
+__pycache__/
+.pytest_cache/
+*.db
+.env
+data/
+.gtihun/
+.ruff_cache/
