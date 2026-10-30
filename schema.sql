@@ -39,3 +39,5 @@ CREATE TABLE IF NOT EXISTS StockMovements(
     Reason TEXT NOT NULL CHECK (Reason IN ('restock', 'adjustment', 'sale')),
     WhenHappened TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
+
+CREATE INDEX IF NOT EXISTS idx_SaleItems_ProductID ON SaleItems(ProductID);
