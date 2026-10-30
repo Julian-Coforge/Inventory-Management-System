@@ -1,3 +1,5 @@
+from contextlib import closing
+
 from inventory_db import connect, create_schema, get_db_path
 
 
@@ -82,13 +84,13 @@ def seed(conn):
 
 def main():
     path = get_db_path()
-    conn = connect(path)
-    create_schema(conn)
-    seed(conn)
+    with closing(connect(path)) as conn:
+        create_schema(conn)
+        seed(conn)
 
-    for table in ["Suppliers", "Products", "Sales", "SaleItems", "StockMovements"]:
-        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-        print(f"{table}: {count}")
+        for table in ["Suppliers", "Products", "Sales", "SaleItems", "StockMovements"]:
+            count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            print(f"{table}: {count}")
 
 
 if __name__ == "__main__": 

@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from datetime import datetime
 from pathlib import Path
 
@@ -176,64 +177,66 @@ def main():
     print("\nWelcome the the Inventory Management System!\n")
     print("\nConnecting to Database...")
     path = get_db_path()
-    conn = connect(path)
-    print("\nDatabase connected! Path:" + path)
-    print("\n\nCreating and seeding Database...")
-    create_schema(conn)
-    seed(conn)
-    print("\n\nThe database is ready!")
-    print("\n=====================================================\n")
-    
-    while True:
-        print("\n\n")
-        option = input(
-            "1. Search products\n"
-            "2. Look up a product\n"
-            "3. Add a product\n"
-            "4. Restock\n"
-            "5. Record a sale\n"
-            "6. Report: stock value by supplier\n"
-            "7. Report: low stock\n"
-            "8. Report: sales by product\n"
-            "9. Report: never sold\n"
-            "10. Back up the database\n"
-            "0. Quit\n"
-            "Choose an option (please enter the corresponding number): "
-        ).strip()
+    with closing(connect(path)) as conn:
+        print("\nDatabase connected! Path:" + path)
+        print("\n\nCreating and seeding Database...")
+        create_schema(conn)
+        seed(conn)
+        print("\n\nThe database is ready!")
+        print("\n=====================================================\n")
 
         try:
-            if option == "1":
-                menu_search(conn)
-            elif option == "2":
-                menu_lookup(conn)
-            elif option == "3":
-                menu_add(conn)
-            elif option == "4":
-                menu_restock(conn)
-            elif option == "5":
-                menu_sale(conn)
-            elif option == "6":
-                menu_stock_value_report(conn)
-            elif option == "7":
-                menu_low_stock(conn)
-            elif option == "8":
-                menu_sale_by_product(conn)
-            elif option == "9":
-                menu_never_sold(conn)
-            elif option == "10":
-                menu_backup(conn)
-            elif option == "0":
-                print("\nGoodbye!\n")
-                break
-            else:
-                print("Invalid Option. Please try again.")
-        except ProductError as e:
-            print(e)
-        except sqlite3.IntegrityError:
-            print("That change breaks a database rule")
-        except sqlite3.Error:
-            print("There was a problem with the database")
+            while True:
+                print("\n\n")
+                option = input(
+                    "1. Search products\n"
+                    "2. Look up a product\n"
+                    "3. Add a product\n"
+                    "4. Restock\n"
+                    "5. Record a sale\n"
+                    "6. Report: stock value by supplier\n"
+                    "7. Report: low stock\n"
+                    "8. Report: sales by product\n"
+                    "9. Report: never sold\n"
+                    "10. Back up the database\n"
+                    "0. Quit\n"
+                    "Choose an option (please enter the corresponding number): "
+                ).strip()
 
+                try:
+                    if option == "1":
+                        menu_search(conn)
+                    elif option == "2":
+                        menu_lookup(conn)
+                    elif option == "3":
+                        menu_add(conn)
+                    elif option == "4":
+                        menu_restock(conn)
+                    elif option == "5":
+                        menu_sale(conn)
+                    elif option == "6":
+                        menu_stock_value_report(conn)
+                    elif option == "7":
+                        menu_low_stock(conn)
+                    elif option == "8":
+                        menu_sale_by_product(conn)
+                    elif option == "9":
+                        menu_never_sold(conn)
+                    elif option == "10":
+                        menu_backup(conn)
+                    elif option == "0":
+                        print("\nGoodbye!\n")
+                        break
+                    else:
+                        print("Invalid Option. Please try again.")
+                except ProductError as e:
+                    print(e)
+                except sqlite3.IntegrityError:
+                    print("That change breaks a database rule")
+                except sqlite3.Error:
+                    print("There was a problem with the database")
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!\n")
 
 if __name__ == "__main__": 
     main()
